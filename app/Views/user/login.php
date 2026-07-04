@@ -29,12 +29,18 @@
             <i id="eyeIcon" class="fa-solid fa-eye"></i>
         </button>
     </div>
+
+    <button type="submit" class="main-btn">
+        Login
+    </button>
+    
 </div>
         <p class="auth-link">
             Don't have an account?
             <a href="<?= base_url('register') ?>">Register here</a>
         </p>
     </div>
+    </form>
 </section>
 
 <script>

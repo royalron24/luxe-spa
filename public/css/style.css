@@ -173,12 +173,12 @@ nav a:hover {
 
 .auth-form {
     display: grid;
-    gap: 18px;
+    gap: 1px;
 }
 
 .auth-field {
     display: grid;
-    gap: 8px;
+    gap: 20px;
 }
 
 .auth-field label {

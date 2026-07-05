@@ -74,18 +74,13 @@
                                 <strong>RM <?= number_format($plan['price'], 2) ?></strong>
                             </div>
                             <p><?= esc($plan['benefits']) ?></p>
-                            <form action="<?= base_url('member/subscription/pay') ?>" method="post">
+                            <form action="<?= base_url('member/payment/prepare') ?>" method="post">
+                                <input type="hidden" name="type" value="membership">
                                 <input type="hidden" name="plan" value="<?= esc($plan['name']) ?>">
                                 <input type="hidden" name="amount" value="<?= esc($plan['price']) ?>">
-                                <div class="spa-field mb-2">
-                                    <label>PAYMENT METHOD</label>
-                                    <select name="payment_method" required>
-                                        <option value="Cash">Cash</option>
-                                        <option value="Credit Card">Credit Card</option>
-                                        <option value="Online Banking">Online Banking</option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="main-btn" style="width:100%">Pay Now</button>
+                                <button type="submit" class="main-btn" style="width:100%">
+                                    <?= $isCurrent ? 'Renew Plan' : 'Subscribe Now' ?>
+                                </button>
                             </form>
                         </div>
                     <?php endforeach; ?>

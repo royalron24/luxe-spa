@@ -102,110 +102,6 @@ $maxDate    = date('Y-m-d', strtotime('+60 days'));
                     </div>
                 </form>
             </div>
-        </main>
-    </div>
-</section>
-
-<script>
-function pickService(card) {
-    document.querySelectorAll('.member-service-pick').forEach(c => c.classList.remove('picked'));
-    card.classList.add('picked');
-    document.getElementById('hiddenService').value        = card.dataset.service;
-    document.getElementById('summaryService').textContent = card.dataset.service + ' — RM ' + parseFloat(card.dataset.price).toFixed(2);
-    document.getElementById('summaryMeta').textContent    = card.dataset.duration + ' min session';
-    var btn = document.getElementById('submitBtn');
-    btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
-    document.getElementById('memberBookForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-</script>
-
-<section class="member-shell container py-4 dashboard-shell">
-    <div class="member-grid row g-4 align-items-start">
-        <div class="col-lg-4 col-xl-3">
-            <?= view('user/templates/member_sidebar', ['member' => $member, 'payments' => $bookings ?? []]) ?>
-        </div>
-
-        <main class="member-main col-lg-8 col-xl-9">
-            <h2 class="page-heading">Book a Session</h2>
-            <p class="page-subheading">Reserve your next wellness ritual</p>
-
-            <form action="<?= base_url('member/booking/store') ?>" method="post" id="bookingForm">
-
-                <!-- Step 1: Choose Service -->
-                <div class="profile-section-card mb-3">
-                    <h3 class="profile-section-title">1. Choose a Service</h3>
-                    <div class="service-select-grid">
-                        <?php foreach ($services as $svc): ?>
-                            <label class="service-select-card">
-                                <input type="radio" name="service" value="<?= esc($svc['name']) ?>" data-price="<?= $svc['price'] ?>" data-duration="<?= $svc['duration'] ?>" required>
-                                <div class="service-card-inner">
-                                    <div class="service-card-icon"><i class="fa-solid <?= $svc['icon'] ?>"></i></div>
-                                    <div>
-                                        <strong><?= esc($svc['name']) ?></strong>
-                                        <p><?= esc($svc['desc']) ?></p>
-                                        <div class="service-meta">
-                                            <span><i class="fa-regular fa-clock"></i> <?= $svc['duration'] ?> min</span>
-                                            <span>RM <?= number_format($svc['price'], 2) ?></span>
-                                        </div>
-                                    </div>
-                                    <i class="fa-solid fa-circle-check service-check"></i>
-                                </div>
-                            </label>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-
-                <!-- Step 2: Date & Time -->
-                <div class="profile-section-card mb-3">
-                    <h3 class="profile-section-title">2. Pick a Date &amp; Time</h3>
-                    <div class="booking-datetime-grid">
-                        <div class="spa-field">
-                            <label>DATE</label>
-                            <input type="date" name="booking_date" min="<?= $today ?>" max="<?= $maxDate ?>" required>
-                        </div>
-                        <div class="spa-field">
-                            <label>TIME SLOT</label>
-                            <select name="booking_time" required>
-                                <option value="" disabled selected>Select a time</option>
-                                <?php foreach ($timeSlots as $slot): ?>
-                                    <option value="<?= $slot ?>"><?= date('g:i A', strtotime($slot)) ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 3: Therapist & Notes -->
-                <div class="profile-section-card mb-3">
-                    <h3 class="profile-section-title">3. Therapist &amp; Preferences</h3>
-                    <div class="booking-datetime-grid mb-3">
-                        <div class="spa-field">
-                            <label>PREFERRED THERAPIST</label>
-                            <select name="therapist">
-                                <?php foreach ($therapists as $t): ?>
-                                    <option value="<?= esc($t) ?>"><?= esc($t) ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="spa-field">
-                            <label>SPECIAL REQUESTS / NOTES</label>
-                            <textarea name="notes" rows="3" placeholder="Allergies, pressure preferences, focus areas…" style="width:100%;padding:12px 16px;border-radius:12px;border:1px solid rgba(232,18,70,.16);background:#fff5f8;color:#3a1f2a;font-size:14px;font-family:inherit;resize:vertical"></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Summary & Submit -->
-                <div class="booking-summary-bar">
-                    <div class="booking-summary-info">
-                        <span id="summaryService" class="summary-service-name">Select a service to continue</span>
-                        <span id="summaryMeta" class="summary-meta"></span>
-                    </div>
-                    <button type="submit" class="main-btn booking-submit-btn">
-                        <i class="fa-solid fa-calendar-check"></i> Confirm Booking
-                    </button>
-                </div>
-
-            </form>
 
             <!-- Upcoming Bookings -->
             <?php if (!empty($bookings)): ?>
@@ -246,13 +142,18 @@ function pickService(card) {
 </section>
 
 <script>
-document.querySelectorAll('input[name="service"]').forEach(function(radio) {
-    radio.addEventListener('change', function() {
-        var card = this.closest('.service-select-card');
-        document.querySelectorAll('.service-select-card').forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-        document.getElementById('summaryService').textContent = this.value + ' — RM ' + parseFloat(this.dataset.price).toFixed(2);
-        document.getElementById('summaryMeta').textContent = this.dataset.duration + ' min session';
-    });
-});
+function pickService(card) {
+    document.querySelectorAll('.member-service-pick').forEach(c => c.classList.remove('picked'));
+    card.classList.add('picked');
+    document.getElementById('hiddenService').value        = card.dataset.service;
+    document.getElementById('summaryService').textContent = card.dataset.service + ' — RM ' + parseFloat(card.dataset.price).toFixed(2);
+    document.getElementById('summaryMeta').textContent    = card.dataset.duration + ' min session';
+    var btn = document.getElementById('submitBtn');
+    btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
+    document.getElementById('memberBookForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 </script>
+
+
+
+

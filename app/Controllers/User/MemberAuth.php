@@ -362,7 +362,8 @@ class MemberAuth extends BaseController
 
         $allowedServices = [
             'Rose Petal Massage', 'Cherry Blossom Facial', 'Hydrating Body Ritual',
-            'Aromatherapy Body Wrap', 'Couples Retreat Package', 'Scalp & Hair Treatment',
+            'Aromatherapy Body Wrap', 'Velvet Hair Spa', 'Couples Retreat Package',
+            'Pedicure & Manicure',
         ];
 
         if (!in_array($service, $allowedServices, true)) {
@@ -383,7 +384,24 @@ class MemberAuth extends BaseController
             'status'       => 'Pending',
         ]);
 
-        return redirect()->to('/member/booking')->with('success', 'Booking confirmed! Your session is pending approval.');
+        $bookingId    = $this->bookingModel->getInsertID();
+        $servicePrices = $this->getServicePrices();
+        $servicePrice  = $servicePrices[$service] ?? 0.00;
+        $duration      = $this->getServiceDuration($service);
+
+        session()->set('payment_intent', [
+            'type'         => 'booking',
+            'service'      => $service,
+            'booking_id'   => $bookingId,
+            'booking_date' => $date,
+            'booking_time' => $time . ':00',
+            'duration'     => $duration,
+            'base_amount'  => $servicePrice,
+            'discount'     => 0.00,
+            'total'        => $servicePrice,
+        ]);
+
+        return redirect()->to('/member/payment');
     }
 
     public function bookingCancel(int $bookingId)
@@ -402,6 +420,176 @@ class MemberAuth extends BaseController
         $this->bookingModel->update($bookingId, ['status' => 'Cancelled']);
 
         return redirect()->to('/member/booking')->with('success', 'Booking cancelled successfully.');
+    }
+
+    // ─── Payment page ────────────────────────────────────────────────────────
+
+    /**
+     * Prepare payment intent and redirect to the payment page.
+     * Accepts POST from the subscription or booking pages.
+     */
+    public function preparePayment()
+    {
+        if ($redirect = $this->requireMember()) {
+            return $redirect;
+        }
+
+        $type = $this->request->getPost('type');
+
+        if ($type === 'membership') {
+            $plan       = $this->request->getPost('plan');
+            $validPlans = ['Bronze' => 120.00, 'Silver' => 180.00, 'Gold' => 260.00];
+
+            if (!array_key_exists($plan, $validPlans)) {
+                return redirect()->to('/member/subscription')->with('error', 'Invalid membership plan.');
+            }
+
+            $baseAmount = $validPlans[$plan];
+            $member     = $this->memberModel->find(session()->get('member_id'));
+            $isRenewal  = !empty($member['membership']);
+            $discount   = $isRenewal ? round($baseAmount * 0.10, 2) : 0.00;
+            $total      = $baseAmount - $discount;
+
+            session()->set('payment_intent', [
+                'type'        => 'membership',
+                'plan'        => $plan,
+                'base_amount' => $baseAmount,
+                'discount'    => $discount,
+                'total'       => $total,
+            ]);
+
+            return redirect()->to('/member/payment');
+        }
+
+        return redirect()->to('/member/subscription')->with('error', 'Invalid payment type.');
+    }
+
+    /**
+     * Show the unified payment page (GET).
+     */
+    public function showPayment()
+    {
+        if ($redirect = $this->requireMember()) {
+            return $redirect;
+        }
+
+        $intent = session()->get('payment_intent');
+        if (!$intent) {
+            return redirect()->to('/member/dashboard')->with('error', 'No payment in progress. Please start from the booking or subscription page.');
+        }
+
+        $memberId = session()->get('member_id');
+        $data = [
+            'member'   => $this->memberModel->find($memberId),
+            'payments' => $this->paymentModel->where('member_id', $memberId)->orderBy('payment_date', 'DESC')->findAll(),
+            'intent'   => $intent,
+        ];
+
+        echo view('user/templates/header');
+        echo view('user/payment', $data);
+        echo view('user/templates/footer');
+    }
+
+    /**
+     * Process the payment and save to the database (POST).
+     */
+    public function processPayment()
+    {
+        if ($redirect = $this->requireMember()) {
+            return $redirect;
+        }
+
+        $memberId = session()->get('member_id');
+        $intent   = session()->get('payment_intent');
+
+        if (!$intent) {
+            return redirect()->to('/member/dashboard')->with('error', 'Payment session expired. Please try again.');
+        }
+
+        $paymentMethod  = $this->request->getPost('payment_method');
+        $allowedMethods = ['Credit Card', 'FPX Online Banking', 'E-Wallet', 'Bank Transfer'];
+
+        if (!in_array($paymentMethod, $allowedMethods, true)) {
+            return redirect()->to('/member/payment')->with('error', 'Invalid payment method selected.');
+        }
+
+        $type  = $intent['type'];
+        $total = (float) $intent['total'];
+
+        if ($type === 'membership') {
+            $plan    = $intent['plan'];
+            $service = $plan . ' Membership';
+            $member  = $this->memberModel->find($memberId);
+
+            $this->memberModel->update($memberId, [
+                'membership' => $plan,
+                'status'     => 'Active',
+                'join_date'  => $member['join_date'] ?? date('Y-m-d'),
+            ]);
+
+            session()->set('membership', $plan);
+            $redirectTo     = '/member/subscription';
+            $successMessage = ucfirst($plan) . ' Membership activated. Payment of RM ' . number_format($total, 2) . ' completed.';
+
+        } elseif ($type === 'booking') {
+            $service   = $intent['service'];
+            $bookingId = (int) ($intent['booking_id'] ?? 0);
+
+            if ($bookingId > 0) {
+                $booking = $this->bookingModel->find($bookingId);
+                if ($booking && (int) $booking['member_id'] === (int) $memberId) {
+                    $this->bookingModel->update($bookingId, ['status' => 'Confirmed']);
+                }
+            }
+
+            $redirectTo     = '/member/booking';
+            $successMessage = 'Booking payment of RM ' . number_format($total, 2) . ' completed. Your session is confirmed!';
+
+        } else {
+            return redirect()->to('/member/dashboard')->with('error', 'Invalid payment type.');
+        }
+
+        $this->paymentModel->save([
+            'member_id'      => $memberId,
+            'service'        => $service,
+            'amount'         => $total,
+            'payment_date'   => date('Y-m-d'),
+            'payment_method' => $paymentMethod,
+            'payment_status' => 'Completed',
+        ]);
+
+        session()->remove('payment_intent');
+
+        return redirect()->to($redirectTo)->with('success', $successMessage);
+    }
+
+    // ─── Private helpers ─────────────────────────────────────────────────────
+
+    private function getServicePrices(): array
+    {
+        return [
+            'Rose Petal Massage'      => 185.00,
+            'Cherry Blossom Facial'   => 150.00,
+            'Hydrating Body Ritual'   => 140.00,
+            'Aromatherapy Body Wrap'  => 120.00,
+            'Velvet Hair Spa'         => 90.00,
+            'Couples Retreat Package' => 380.00,
+            'Pedicure & Manicure'     => 85.00,
+        ];
+    }
+
+    private function getServiceDuration(string $service): int
+    {
+        $durations = [
+            'Rose Petal Massage'      => 90,
+            'Cherry Blossom Facial'   => 60,
+            'Hydrating Body Ritual'   => 75,
+            'Aromatherapy Body Wrap'  => 60,
+            'Velvet Hair Spa'         => 45,
+            'Couples Retreat Package' => 120,
+            'Pedicure & Manicure'     => 60,
+        ];
+        return $durations[$service] ?? 60;
     }
 }
 

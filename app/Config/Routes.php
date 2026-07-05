@@ -35,6 +35,9 @@ $routes->get('/member/treatment-history', 'User\\MemberAuth::treatmentHistory');
 $routes->get('/member/booking', 'User\\MemberAuth::booking');
 $routes->post('/member/booking/store', 'User\\MemberAuth::bookingStore');
 $routes->get('/member/booking/cancel/(:num)', 'User\\MemberAuth::bookingCancel/$1');
+$routes->post('/member/payment/prepare', 'User\\MemberAuth::preparePayment');
+$routes->get('/member/payment', 'User\\MemberAuth::showPayment');
+$routes->post('/member/payment/process', 'User\\MemberAuth::processPayment');
 $routes->get('/logout', 'User\\MemberAuth::logout');
 
 // =========================

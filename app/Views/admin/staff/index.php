@@ -85,7 +85,6 @@
                     <tr>
                         <th>#</th>
                         <th>Full Name</th>
-                        <th>Email</th>
                         <th>Phone</th>
                         <th>Position</th>
                         <th>Join Date</th>
@@ -95,7 +94,7 @@
                 </thead>
                 <tbody>
                     <?php if (empty($staff)): ?>
-                        <tr><td colspan="8" class="text-center text-muted py-5">
+                        <tr><td colspan="7" class="text-center text-muted py-5">
                             <i class="fa-solid fa-user-slash fa-2x mb-2 d-block" style="color:#f4c5d4"></i>
                             No staff found.
                         </td></tr>

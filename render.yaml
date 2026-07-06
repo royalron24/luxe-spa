@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: luxe-spa
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: CI_ENVIRONMENT
+        value: production
+      - key: APP_BASE_URL
+        value: https://luxe-spa.onrender.com/
+      - key: DB_HOSTNAME
+        value: mysql-22991cbb-naziruln24-bf9d.c.aivencloud.com
+      - key: DB_DATABASE
+        value: defaultdb
+      - key: DB_USERNAME
+        value: avnadmin
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_PORT
+        value: "18706"

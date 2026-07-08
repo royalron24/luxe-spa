@@ -1,10 +1,19 @@
 #!/bin/bash
 set -e
 
-# Generate .env file from Render environment variables at container start
+# Determine correct HTTPS base URL for Railway
+if [ -n "${APP_BASE_URL}" ]; then
+    BASE_URL="${APP_BASE_URL}"
+elif [ -n "${RAILWAY_PUBLIC_DOMAIN}" ]; then
+    BASE_URL="https://${RAILWAY_PUBLIC_DOMAIN}/"
+else
+    BASE_URL=""
+fi
+
+# Generate .env file from environment variables at container start
 cat > /var/www/html/.env << ENVFILE
 CI_ENVIRONMENT = ${CI_ENVIRONMENT:-production}
-app.baseURL = '${APP_BASE_URL:-}'
+app.baseURL = '${BASE_URL}'
 
 database.default.hostname = ${DB_HOSTNAME:-localhost}
 database.default.database = ${DB_DATABASE:-defaultdb}

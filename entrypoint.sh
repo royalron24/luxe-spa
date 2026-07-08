@@ -19,6 +19,6 @@ ENVFILE
 
 # Railway injects PORT; default to 80 if not set
 APP_PORT=${PORT:-80}
-sed -i "s/listen 80 default_server/listen ${APP_PORT} default_server/g" /etc/nginx/http.d/default.conf
+sed -i "s/listen 80 default_server/listen ${APP_PORT} default_server/g" /etc/nginx/sites-available/default
 
 exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf

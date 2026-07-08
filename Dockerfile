@@ -3,8 +3,9 @@ FROM php:8.2-fpm-alpine
 # Install nginx and supervisor (no Apache, no MPM issues)
 RUN apk add --no-cache nginx supervisor
 
-# Install PHP extensions
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+# Install PHP extensions (including intl required by CodeIgniter 4.7.3)
+RUN apk add --no-cache icu-dev \
+    && docker-php-ext-install mysqli pdo pdo_mysql intl
 
 # Copy nginx and supervisor configs
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf

@@ -17,4 +17,4 @@ database.default.DBDebug = false
 database.default.encrypt = true
 ENVFILE
 
-exec apache2-foreground
+exec php -S 0.0.0.0:80 -t public

@@ -6,6 +6,8 @@ COPY . /var/www/html
 
 WORKDIR /var/www/html
 
+RUN chmod +x /var/www/html/entrypoint.sh
+
 EXPOSE 80
 
-CMD ["php", "-S", "0.0.0.0:80", "-t", "public"]
+ENTRYPOINT ["/var/www/html/entrypoint.sh"]

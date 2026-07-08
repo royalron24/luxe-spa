@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 # Generate .env file from Render environment variables at container start
@@ -21,4 +21,4 @@ ENVFILE
 APP_PORT=${PORT:-80}
 sed -i "s/listen 80 default_server/listen ${APP_PORT} default_server/g" /etc/nginx/http.d/default.conf
 
-exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf

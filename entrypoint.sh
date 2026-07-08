@@ -4,7 +4,7 @@ set -e
 # Generate .env file from Render environment variables at container start
 cat > /var/www/html/.env << ENVFILE
 CI_ENVIRONMENT = ${CI_ENVIRONMENT:-production}
-app.baseURL = '${APP_BASE_URL:-http://localhost/}'
+app.baseURL = '${APP_BASE_URL:-}'
 
 database.default.hostname = ${DB_HOSTNAME:-localhost}
 database.default.database = ${DB_DATABASE:-defaultdb}

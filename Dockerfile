@@ -16,6 +16,6 @@ WORKDIR /var/www/html
 
 RUN sed -i 's/\r//' entrypoint.sh && chmod +x entrypoint.sh
 
-EXPOSE 80
+EXPOSE ${PORT:-80}
 
 ENTRYPOINT ["/bin/sh", "/var/www/html/entrypoint.sh"]

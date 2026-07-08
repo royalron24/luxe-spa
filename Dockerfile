@@ -12,9 +12,11 @@ COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 COPY . /var/www/html
 
-WORKDIR /var/www/html
+# Install Composer and project dependencies
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+RUN composer install --no-dev --no-interaction --optimize-autoloader
 
-RUN sed -i 's/\r//' entrypoint.sh && chmod +x entrypoint.sh
+ && chmod +x entrypoint.sh
 
 EXPOSE ${PORT:-80}
 

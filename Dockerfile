@@ -32,6 +32,6 @@ RUN chown -R www-data:www-data /var/www/html/writable \
 
 RUN sed -i 's/\r//' entrypoint.sh && chmod +x entrypoint.sh
 
-EXPOSE ${PORT:-80}
+EXPOSE 80
 
 ENTRYPOINT ["/bin/bash", "/var/www/html/entrypoint.sh"]

@@ -6,8 +6,10 @@ COPY . /var/www/html
 
 WORKDIR /var/www/html
 
-RUN chmod +x /var/www/html/entrypoint.sh
+# Strip Windows CRLF line endings and make executable
+RUN sed -i 's/\r//' entrypoint.sh && chmod +x entrypoint.sh
 
 EXPOSE 80
 
-ENTRYPOINT ["/var/www/html/entrypoint.sh"]
+# Use explicit bash to avoid shebang CRLF issues
+ENTRYPOINT ["/bin/bash", "/var/www/html/entrypoint.sh"]

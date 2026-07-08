@@ -27,7 +27,7 @@ _DB_PORT="${DB_PORT:-${MYSQLPORT:-${MYSQL_PORT:-3306}}}"
 
 # Generate .env file from environment variables at container start
 cat > /var/www/html/.env << ENVFILE
-CI_ENVIRONMENT = development
+CI_ENVIRONMENT = ${CI_ENVIRONMENT:-production}
 app.baseURL = '${BASE_URL}'
 app.indexPage = ''
 
@@ -38,7 +38,7 @@ database.default.password = ${_DB_PASS}
 database.default.DBDriver = MySQLi
 database.default.DBPrefix =
 database.default.port = ${_DB_PORT}
-database.default.DBDebug = true
+database.default.DBDebug = false
 database.default.encrypt = false
 ENVFILE
 

@@ -125,7 +125,7 @@ class Revenue extends BaseController
 // ===============================
 
         $highest = $paymentModel
-            ->select('MONTHNAME(payment_date) AS month, SUM(amount) AS total')
+            ->select('MIN(MONTHNAME(payment_date)) AS month, SUM(amount) AS total')
             ->where('payment_status', 'Completed')
             ->groupBy('MONTH(payment_date)')
             ->orderBy('total', 'DESC')

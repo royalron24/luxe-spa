@@ -18,4 +18,4 @@ RUN sed -i 's/\r//' entrypoint.sh && chmod +x entrypoint.sh
 
 EXPOSE 80
 
-ENTRYPOINT ["/bin/bash", "/var/www/html/entrypoint.sh"]
+ENTRYPOINT ["/bin/sh", "/var/www/html/entrypoint.sh"]

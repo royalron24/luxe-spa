@@ -17,4 +17,4 @@ database.default.DBDebug = false
 database.default.encrypt = true
 ENVFILE
 
-exec apache2-foreground
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf

@@ -1,18 +1,14 @@
-FROM php:8.2-apache
+FROM php:8.2-fpm-alpine
+
+# Install nginx and supervisor (no Apache, no MPM issues)
+RUN apk add --no-cache nginx supervisor
 
 # Install PHP extensions
 RUN docker-php-ext-install mysqli pdo pdo_mysql
 
-# Enable rewrite only (do NOT touch MPM)
-RUN a2enmod rewrite
-
-# Set CodeIgniter public folder
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' \
-    /etc/apache2/sites-available/000-default.conf \
-    && printf '<Directory /var/www/html/public>\n\
-    AllowOverride All\n\
-    Require all granted\n\
-</Directory>\n' >> /etc/apache2/sites-available/000-default.conf
+# Copy nginx and supervisor configs
+COPY docker/nginx.conf /etc/nginx/http.d/default.conf
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 COPY . /var/www/html
 

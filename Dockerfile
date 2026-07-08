@@ -26,6 +26,10 @@ WORKDIR /var/www/html
 
 RUN composer install --no-dev --no-interaction --optimize-autoloader
 
+# Fix permissions for PHP-FPM (runs as www-data)
+RUN chown -R www-data:www-data /var/www/html/writable \
+    && chmod -R 775 /var/www/html/writable
+
 RUN sed -i 's/\r//' entrypoint.sh && chmod +x entrypoint.sh
 
 EXPOSE ${PORT:-80}

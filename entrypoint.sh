@@ -47,6 +47,11 @@ APP_PORT=${PORT:-80}
 sed -i "s/listen 80 default_server/listen ${APP_PORT} default_server/g" /etc/nginx/sites-available/default
 
 # Auto-import database schema if tables are missing (safe: uses CREATE TABLE IF NOT EXISTS)
+echo "=== DB CONFIG ==="
+echo "  Host:     ${_DB_HOST}:${_DB_PORT}"
+echo "  Database: ${_DB_NAME}"
+echo "  User:     ${_DB_USER}"
+echo "================="
 echo "Checking database tables..."
 MYSQL_OPTS="-h ${_DB_HOST} -P ${_DB_PORT} -u ${_DB_USER} -p${_DB_PASS} ${_DB_NAME}"
 if ! mysql ${MYSQL_OPTS} -e "SELECT 1 FROM admins LIMIT 1;" > /dev/null 2>&1; then

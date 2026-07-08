@@ -51,7 +51,7 @@ class Filters extends BaseFilters
      */
     public array $required = [
         'before' => [
-            'forcehttps', // Force Global Secure Requests
+            // 'forcehttps', // Disabled – nginx already enforces HTTPS via fastcgi_param HTTPS on
             'pagecache',  // Web Page Caching
         ],
         'after' => [

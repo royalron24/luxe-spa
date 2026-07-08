@@ -1,4 +1,5 @@
 .git/
+.env
 writable/logs/*
 writable/cache/*
 writable/debugbar/*

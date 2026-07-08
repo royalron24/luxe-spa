@@ -1,12 +1,15 @@
 #!/bin/bash
 set -e
 
-# Determine correct HTTPS base URL for Railway
+# Determine correct HTTPS base URL (Railway / Render / manual override)
 if [ -n "${APP_BASE_URL}" ]; then
     BASE_URL="${APP_BASE_URL}"
 elif [ -n "${RAILWAY_PUBLIC_DOMAIN}" ]; then
     BASE_URL="https://${RAILWAY_PUBLIC_DOMAIN}/"
+elif [ -n "${RAILWAY_STATIC_URL}" ]; then
+    BASE_URL="${RAILWAY_STATIC_URL}/"
 else
+    # Leave empty so CodeIgniter auto-detects from HTTP_HOST
     BASE_URL=""
 fi
 
@@ -14,6 +17,7 @@ fi
 cat > /var/www/html/.env << ENVFILE
 CI_ENVIRONMENT = ${CI_ENVIRONMENT:-production}
 app.baseURL = '${BASE_URL}'
+app.indexPage = ''
 
 database.default.hostname = ${DB_HOSTNAME:-localhost}
 database.default.database = ${DB_DATABASE:-defaultdb}

@@ -26,7 +26,6 @@
     </div>
 
     <div class="table-box">
-
         <form method="get" action="<?= base_url('filter') ?>">
 
             <div class="row">

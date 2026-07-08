@@ -46,4 +46,14 @@ ENVFILE
 APP_PORT=${PORT:-80}
 sed -i "s/listen 80 default_server/listen ${APP_PORT} default_server/g" /etc/nginx/sites-available/default
 
+# Auto-import database schema if tables are missing (safe: uses CREATE TABLE IF NOT EXISTS)
+echo "Checking database tables..."
+MYSQL_OPTS="-h ${_DB_HOST} -P ${_DB_PORT} -u ${_DB_USER} -p${_DB_PASS} ${_DB_NAME}"
+if ! mysql ${MYSQL_OPTS} -e "SELECT 1 FROM admins LIMIT 1;" > /dev/null 2>&1; then
+    echo "Tables not found – importing database_setup.sql..."
+    mysql ${MYSQL_OPTS} < /var/www/html/database_setup.sql && echo "Database setup complete." || echo "Warning: database_setup.sql import failed."
+else
+    echo "Database tables already exist – skipping import."
+fi
+
 exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf

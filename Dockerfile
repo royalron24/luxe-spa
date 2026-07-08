@@ -1,46 +1,25 @@
 FROM php:8.2-apache
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    libicu-dev \
-    libonig-dev \
-    unzip \
-    && rm -rf /var/lib/apt/lists/*
+# Install PHP extensions needed for CodeIgniter + MySQL
+RUN docker-php-ext-install mysqli pdo pdo_mysql
 
-# Install PHP extensions required by CodeIgniter 4
-RUN docker-php-ext-install mysqli pdo pdo_mysql intl mbstring
-
-# Enable Apache mod_rewrite
+# Enable CodeIgniter URL rewriting
 RUN a2enmod rewrite
 
-# Set Apache document root to CI4's public/ directory
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+# Disable all MPM modules first, then enable only prefork
+RUN a2dismod mpm_event mpm_worker mpm_prefork || true
+RUN a2enmod mpm_prefork
 
-# Allow .htaccess overrides
-RUN sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
+# Set CodeIgniter public folder as Apache root
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 
-# Install Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
+    /etc/apache2/sites-available/*.conf \
+    /etc/apache2/apache2.conf \
+    /etc/apache2/conf-available/*.conf
 
-WORKDIR /var/www/html
+COPY . /var/www/html
 
-# Copy composer files first for layer caching
-COPY composer.json composer.lock ./
-
-# Install PHP dependencies (no dev)
-RUN composer install --no-dev --optimize-autoloader --no-interaction
-
-# Copy application files
-COPY . .
-
-# Set writable directory permissions
-RUN chown -R www-data:www-data /var/www/html/writable \
-    && chmod -R 775 /var/www/html/writable
-
-# Copy and set entrypoint
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN chown -R www-data:www-data /var/www/html
 
 EXPOSE 80
-
-ENTRYPOINT ["/entrypoint.sh"]

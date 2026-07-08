@@ -1,11 +1,11 @@
-FROM php:8.2-apache
-
-RUN find /etc/apache2/mods-enabled/ -name 'mpm_*' -delete \
-    && ln -sf /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load \
-    && ln -sf /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf
+FROM php:8.2-cli
 
 RUN docker-php-ext-install mysqli pdo pdo_mysql
 
 COPY . /var/www/html
 
+WORKDIR /var/www/html
+
 EXPOSE 80
+
+CMD ["php", "-S", "0.0.0.0:80", "-t", "public"]

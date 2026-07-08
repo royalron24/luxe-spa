@@ -1,10 +1,6 @@
 FROM php:8.2-apache
 
-RUN docker-php-ext-install mysqli pdo pdo_mysql
-
-RUN a2dismod mpm_event || true \
-    && a2dismod mpm_worker || true \
-    && a2enmod mpm_prefork \
+RUN docker-php-ext-install mysqli pdo pdo_mysql \
     && a2enmod rewrite
 
 RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' \
@@ -19,5 +15,7 @@ WORKDIR /var/www/html
 RUN sed -i 's/\r//' entrypoint.sh && chmod +x entrypoint.sh
 
 EXPOSE 80
+
+RUN ls -l /etc/apache2/mods-enabled/
 
 ENTRYPOINT ["/bin/bash", "/var/www/html/entrypoint.sh"]
